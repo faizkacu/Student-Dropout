@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
+import os
 
 # =========================
 # CONFIG PAGE
@@ -16,22 +17,37 @@ st.set_page_config(
 )
 
 # =========================
-# LOAD ARTIFACTS
+# SAFE LOAD ARTIFACTS
 # =========================
 @st.cache_resource
 def load_artifacts():
-    model = joblib.load('model.pkl')
-    columns = joblib.load('columns.pkl')
-    label_encoder = joblib.load('label_encoder.pkl')
-    return model, columns, label_encoder
+    try:
+        if not os.path.exists("model.pkl"):
+            st.error("model.pkl tidak ditemukan")
+            return None, None, None
+
+        model = joblib.load("model.pkl")
+        columns = joblib.load("columns.pkl")
+        label_encoder = joblib.load("label_encoder.pkl")
+
+        return model, columns, label_encoder
+
+    except Exception as e:
+        st.error("Gagal load model")
+        st.text(str(e))
+        return None, None, None
 
 model, columns, le = load_artifacts()
+
+# STOP jika model gagal load
+if model is None:
+    st.stop()
 
 # =========================
 # HEADER
 # =========================
 st.title("🎓 Student Dropout Prediction System")
-st.markdown("Prediksi status siswa + deteksi risiko dropout berbasis Machine Learning")
+st.markdown("Prediksi status siswa + deteksi risiko dropout")
 
 st.divider()
 
@@ -53,25 +69,28 @@ with col2:
     debtor = st.selectbox("Debtor", [0, 1])
 
 # =========================
-# BUILD INPUT DATA
+# BUILD INPUT DATA (SAFE)
 # =========================
-input_data = pd.DataFrame([0]*len(columns)).T
-input_data.columns = columns
+input_data = pd.DataFrame(0, index=[0], columns=columns)
 
-# isi fitur utama
-input_data.loc[0, 'Age_at_enrollment'] = age
-input_data.loc[0, 'Admission_grade'] = admission_grade
-input_data.loc[0, 'Curricular_units_1st_sem_grade'] = sem1_grade
-input_data.loc[0, 'Curricular_units_2nd_sem_grade'] = sem2_grade
-input_data.loc[0, 'Scholarship_holder'] = scholarship
-input_data.loc[0, 'Debtor'] = debtor
+# isi hanya jika kolom ada
+def safe_set(col, value):
+    if col in input_data.columns:
+        input_data.loc[0, col] = value
+
+safe_set('Age_at_enrollment', age)
+safe_set('Admission_grade', admission_grade)
+safe_set('Curricular_units_1st_sem_grade', sem1_grade)
+safe_set('Curricular_units_2nd_sem_grade', sem2_grade)
+safe_set('Scholarship_holder', scholarship)
+safe_set('Debtor', debtor)
 
 # =========================
-# FEATURE ENGINEERING
+# FEATURE ENGINEERING (SAFE)
 # =========================
-input_data.loc[0, 'grade_trend'] = sem2_grade - sem1_grade
-input_data.loc[0, 'avg_grade'] = (sem1_grade + sem2_grade) / 2
-input_data.loc[0, 'grade_ratio'] = sem2_grade / (sem1_grade + 1)
+safe_set('grade_trend', sem2_grade - sem1_grade)
+safe_set('avg_grade', (sem1_grade + sem2_grade) / 2)
+safe_set('grade_ratio', sem2_grade / (sem1_grade + 1))
 
 st.write("### 📊 Data Input")
 st.dataframe(input_data)
@@ -84,9 +103,7 @@ if st.button("🔍 Prediksi"):
     try:
         proba = model.predict_proba(input_data)[0]
 
-        # =========================
-        # NORMALISASI PROBABILITAS
-        # =========================
+        # normalisasi
         proba = proba / proba.sum()
 
         max_prob = np.max(proba)
@@ -97,22 +114,18 @@ if st.button("🔍 Prediksi"):
         dropout_prob = proba[dropout_idx]
 
         # =========================
-        # SMART DECISION LOGIC (FIXED)
+        # DECISION LOGIC (IMPROVED)
         # =========================
-        CONF_THRESHOLD = 0.5
-
-        # fallback jika tidak yakin
-        if max_prob < CONF_THRESHOLD:
+        if max_prob < 0.5:
             pred_label = "Enrolled"
 
-        # override jika dropout tinggi
         if dropout_prob > 0.6:
             pred_label = "Dropout"
 
-        # sanity check (WAJIB)
+        # sanity rule
         if sem1_grade >= 15 and sem2_grade >= 15:
             pred_label = "Graduate"
-            dropout_prob = min(dropout_prob, 0.1)  # 🔥 fix kontradiksi
+            dropout_prob = min(dropout_prob, 0.1)
 
         st.divider()
         st.subheader("📢 Hasil Prediksi")
@@ -132,7 +145,7 @@ if st.button("🔍 Prediksi"):
         # =========================
         # PROBABILITAS
         # =========================
-        st.subheader("📊 Probabilitas Model")
+        st.subheader("📊 Probabilitas")
 
         for i, label in enumerate(le.classes_):
             st.progress(float(proba[i]))
@@ -144,23 +157,20 @@ if st.button("🔍 Prediksi"):
         st.subheader("⚠️ Risiko Dropout")
 
         if dropout_prob > 0.7:
-            st.error(f"Tinggi ({dropout_prob*100:.2f}%) → Intervensi segera")
+            st.error(f"Tinggi ({dropout_prob*100:.2f}%)")
         elif dropout_prob > 0.4:
-            st.warning(f"Sedang ({dropout_prob*100:.2f}%) → Monitoring")
+            st.warning(f"Sedang ({dropout_prob*100:.2f}%)")
         else:
             st.success(f"Rendah ({dropout_prob*100:.2f}%)")
 
-        # =========================
-        # CONFIDENCE
-        # =========================
-        st.caption(f"Tingkat keyakinan model: {max_prob*100:.2f}%")
+        st.caption(f"Confidence Model: {max_prob*100:.2f}%")
 
     except Exception as e:
-        st.error("Terjadi error saat prediksi")
+        st.error("Error saat prediksi")
         st.text(str(e))
 
 # =========================
 # FOOTER
 # =========================
 st.divider()
-st.caption("© 2026 - Student Dropout Prediction System | Machine Learning")
+st.caption("© 2026 - Student Dropout Prediction System")

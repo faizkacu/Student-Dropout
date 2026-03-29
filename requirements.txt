@@ -1,4 +1,4 @@
-# Untuk Deploy Streamlit App di Streamlit Cloud 
+# Untuk Deploy ke streamlit cloud
 streamlit
 pandas
 numpy
