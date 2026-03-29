@@ -45,7 +45,7 @@ Jelaskan cara menjalankan protoype sistem machine learning yang telah dibuat. Se
 -> Jalankan perintah berikut untuk menjalankan prototype (local):
 streamlit run app.py
 -> Akses prototype melalui link berikut (deploy):
-http://<your-deployment-link>
+student-dropout-faizkacu.streamlit.app
 ```
 
 ## Conclusion
