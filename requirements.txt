@@ -1,12 +1,6 @@
-streamlit==1.32.0
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.4.2
-joblib==1.4.2
-xgboost==2.0.3
-lightgbm==4.3.0
-imbalanced-learn==0.12.2
-matplotlib==3.8.4
-seaborn==0.13.2
-scipy==1.13.1
-category-encoders==2.6.3
+# Untuk Deploy Streamlit App di Streamlit Cloud 
+streamlit
+pandas
+numpy
+scikit-learn
+joblib
