@@ -30,7 +30,7 @@ Setup environment:
 ```
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r model-requirements.txt
 ```
 
 ## Business Dashboard
@@ -50,12 +50,10 @@ student-dropout-faizkacu.streamlit.app
 
 ## Conclusion
 Ada beberapa kesimpulan yang saya dapat tarik dari proyek ini:
-- Beberapa faktor memiliki pengaruh signifikan terhadap kemungkinan dropout, yang dapat diidentifikasi melalui feature importance.
-- Model machine learning berhasil mengidentifikasi siswa berisiko dropout dengan performa yang baik pada metrik-metrik yang ditentukan.
-- Pada hasil evaluasi model, terlihat bahwa model memiliki akurasi yang cukup tinggi, namun masih terdapat ruang untuk perbaikan terutama dalam hal recall untuk kelas dropout.
+- Model terbaik adalah Logistic Regression dengan performa tinggi (accuracy 94.35%, recall 90.84%, F1-score 92.63%, ROC-AUC 0.97). Fitur paling berpengaruh adalah avg_grade, grade_trend, dan indikator performa seperti high_performance, yang menegaskan bahwa faktor akademik dominan dalam prediksi dropout.
+- Model terbaik adalah Logistic Regression dengan performa tinggi (accuracy 94.35%, recall 90.84%, F1-score 92.63%, ROC-AUC 0.97). Fitur paling berpengaruh adalah avg_grade, grade_trend, dan indikator performa seperti high_performance, yang menegaskan bahwa faktor akademik dominan dalam prediksi dropout.
 
 ### Rekomendasi Action Items
 Berikan beberapa rekomendasi action items yang harus dilakukan perusahaan guna menyelesaikan permasalahan atau mencapai target mereka.
-- Tingkatkan engagement melalui Reward kepada mahasiswa, perbaikan kurikulum dan Reminder aktivitas
-- Fokus pada jurusan-jurusan mahasiswa yang tinggi dropout-nya
-- Berikan intervensi personal untuk siswa berisiko tinggi:
+- Mahasiswa dengan rata-rata nilai rendah (average_score < 10) memiliki risiko dropout yang lebih tinggi. Institusi harus mengembangkan program intervensi akademik, seperti bimbingan belajar tambahan, workshop keterampilan belajar, atau sesi konsultasi dengan dosen pembimbing untuk membantu mahasiswa meningkatkan performa akademik mereka.
+- Hasil analisis menunjukkan bahwa mahasiswa dengan status menunggak (Debtor = 1) dan tidak menerima beasiswa (Scholarship_holder = 0) memiliki risiko dropout lebih tinggi, bahkan ketika performa akademik tidak terlalu buruk. Oleh karena itu, institusi perlu mengembangkan sistem identifikasi otomatis berbasis data keuangan untuk mendeteksi mahasiswa dalam kondisi ini, kemudian memberikan bantuan seperti beasiswa darurat atau skema cicilan fleksibel. Prioritas diberikan pada mahasiswa yang juga mengalami penurunan akademik, karena kombinasi faktor finansial dan akademik terbukti meningkatkan risiko dropout secara signifikan.
